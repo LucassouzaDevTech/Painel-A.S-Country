@@ -1,7 +1,6 @@
 # ⚙️ Painel Admin — A.S Country
 
-![Freelance](https://img.shields.io/badge/Projeto-Freelancer-blueviolet?style=flat-square) ![Status](https://img.shields.io/badge/Status-Em%20Produção-success?style=flat-square)
-
+![Freelance](https://img.shields.io/badge/Projeto-Freelancer-blueviolet?style=flat-square) ![Entregue](https://img.shields.io/badge/Entregue-✓-brightgreen?style=flat-square)
 > Painel administrativo para gerenciamento do catálogo da loja A.S Country, com suporte a Supabase e Cloudinary.
 > 
 > 💼 **Projeto freelancer desenvolvido para um cliente real.**

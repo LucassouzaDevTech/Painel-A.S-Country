@@ -6,7 +6,6 @@
 > 
 > 💼 **Projeto freelancer desenvolvido para um cliente real.**
 
-🔗 **Demo ao vivo:** [painel-ascountry.netlify.app](https://painel-ascountry.netlify.app)
 
 ---
 

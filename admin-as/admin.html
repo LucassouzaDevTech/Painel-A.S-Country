@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — A.S Country</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span class="as">A.S</span><span class="country">COUNTRY</span></div>
+      <div class="sidebar-badge">Admin Panel</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <button class="nav-item active" data-view="dashboard" onclick="navigate('dashboard')">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </button>
+      <button class="nav-item" data-view="products" onclick="navigate('products')">
+        <i class="fas fa-box-open"></i> Produtos
+      </button>
+      <button class="nav-item" data-view="categories" onclick="navigate('categories')">
+        <i class="fas fa-tags"></i> Categorias
+      </button>
+      <button class="nav-item" data-view="highlights" onclick="navigate('highlights')">
+        <i class="fas fa-star"></i> Destaques
+      </button>
+      <div class="nav-label">Ferramentas</div>
+      <button class="nav-item" data-view="export" onclick="navigate('export')">
+        <i class="fas fa-file-export"></i> Exportar Site
+      </button>
+      <button class="nav-item" data-view="settings" onclick="navigate('settings')">
+        <i class="fas fa-cog"></i> Configurações
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="config-status">
+        <span id="supabaseStatus"></span> Supabase
+      </div>
+      <div class="config-status">
+        <span id="cloudinaryStatus"></span> Cloudinary
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <span class="topbar-title" id="topbarTitle">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline btn-sm" onclick="navigate('export')">
+          <i class="fas fa-file-export"></i> Exportar
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ======== DASHBOARD ======== -->
+      <div class="view active" id="view-dashboard">
+        <div id="setupBanner" class="setup-card" style="display:none;">
+          <h3>⚙️ Configuração Necessária</h3>
+          <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:1rem;">
+            Configure o Supabase e Cloudinary em <strong style="color:var(--gold)">Configurações</strong> para salvar produtos na nuvem. Sem isso, os dados ficam apenas no seu navegador.
+          </p>
+          <button class="btn btn-gold btn-sm" onclick="navigate('settings')">
+            <i class="fas fa-cog"></i> Ir para Configurações
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-box-open"></i></div>
+            <div class="stat-info"><h3 id="statTotal">0</h3><p>Total de Produtos</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-tags"></i></div>
+            <div class="stat-info"><h3 id="statCategories">0</h3><p>Categorias</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-images"></i></div>
+            <div class="stat-info"><h3 id="statWithImg">0</h3><p>Com Imagem</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-star"></i></div>
+            <div class="stat-info"><h3 id="statFeatured">0</h3><p>Destaques</p></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;">
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--gold);margin-bottom:1rem;">ÚLTIMOS PRODUTOS</h3>
+          <div id="recentProducts"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- ======== PRODUTOS ======== -->
+      <div class="view" id="view-products">
+        <div class="section-header">
+          <h2>PRODUTOS</h2>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
+            <div class="search-bar">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Buscar produto..." oninput="filterProducts(this.value)" id="searchInput" />
+            </div>
+            <button class="btn btn-gold" onclick="openProductModal()">
+              <i class="fas fa-plus"></i> Novo Produto
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-row" id="catFilterRow"></div>
+        <div class="products-grid" id="productsGrid"></div>
+      </div>
+
+      <!-- ======== CATEGORIAS ======== -->
+      <div class="view" id="view-categories">
+        <div class="section-header">
+          <h2>CATEGORIAS</h2>
+          <button class="btn btn-gold" onclick="openCatModal()">
+            <i class="fas fa-plus"></i> Nova Categoria
+          </button>
+        </div>
+        <div class="info-box">
+          <strong>Dica:</strong> As categorias criadas aqui serão usadas nos botões de filtro do site. O <strong>slug</strong> é o identificador interno (use letras minúsculas e hifens, ex: <strong>calcas-femininas</strong>).
+        </div>
+        <div class="cat-list" id="catList"></div>
+      </div>
+
+      <!-- ======== DESTAQUES ======== -->
+      <div class="view" id="view-highlights">
+        <div class="section-header">
+          <h2>DESTAQUES DO CARROSSEL</h2>
+          <div style="display:flex;gap:.75rem;">
+            <button class="btn btn-outline btn-sm" onclick="loadAllData().then(()=>{renderHighlightsGrid();renderDashboard();})">
+              <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+          </div>
+        </div>
+        <div class="info-box" style="margin-bottom:1.5rem;">
+          <i class="fas fa-info-circle" style="color:var(--gold);margin-right:.4rem;"></i>
+          Marque até <strong>6 produtos</strong> como destaque. Eles aparecerão no carrossel da página inicial.
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);">Filtrar por categoria</span>
+            <span id="featuredCount" style="font-size:.8rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;"></span>
+          </div>
+          <div id="hlCatFilterRow" style="display:flex;flex-wrap:wrap;gap:.5rem;"></div>
+        </div>
+        <div id="highlightsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;"></div>
+      </div>
+
+      <!-- ======== EXPORTAR ======== -->
+      <div class="view" id="view-export">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;margin-bottom:1.5rem;">EXPORTAR SITE</h2>
+
+        <div class="export-card">
+          <h3>📋 Como funciona</h3>
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-text">Clique em <strong>"Gerar e Baixar"</strong> para baixar o arquivo com os produtos atualizados.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-text">Substitua o conteúdo correspondente no <strong>index.html</strong> do seu site pelo arquivo baixado.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-text">Produtos com imagem do Cloudinary carregam pela URL. Imagens locais precisam estar na pasta <strong>uploads/</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="export-card">
+          <h3>🚀 Gerar Arquivo</h3>
+          <p>Clique abaixo para gerar o HTML com todos os produtos cadastrados.</p>
+          <button class="btn btn-gold" onclick="exportSite()" style="margin-top:.5rem;">
+            <i class="fas fa-download"></i> Gerar e Baixar
+          </button>
+        </div>
+
+        <div class="export-card">
+          <h3>📦 Preview</h3>
+          <p>Prévia do HTML que será gerado:</p>
+          <div class="code-block" id="codePreview">Clique em "Gerar" para ver o preview...</div>
+        </div>
+      </div>
+
+      <!-- ======== CONFIGURAÇÕES ======== -->
+      <div class="view" id="view-settings">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;margin-bottom:1.5rem;">CONFIGURAÇÕES</h2>
+
+        <div class="settings-section">
+          <h3>🔐 Supabase (Banco de Dados)</h3>
+          <div class="info-box">
+            <strong>Gratuito:</strong> Crie uma conta em <strong>supabase.com</strong>, crie um projeto, vá em <strong>Settings → API</strong> e copie a URL e a chave anon/public. Depois execute o SQL abaixo no <strong>SQL Editor</strong>.
+          </div>
+          <div class="two-col">
+            <div class="form-group">
+              <label>Supabase URL</label>
+              <input type="text" id="cfgSupabaseUrl" placeholder="https://xxxx.supabase.co" />
+            </div>
+            <div class="form-group">
+              <label>Supabase Anon Key</label>
+              <input type="text" id="cfgSupabaseKey" placeholder="eyJhbGciOiJI..." />
+            </div>
+          </div>
+          <details style="margin-bottom:1rem;">
+            <summary style="cursor:pointer;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;">Ver SQL para criar tabelas</summary>
+            <div class="code-block" style="margin-top:.75rem;">-- Cole isso no SQL Editor do Supabase e clique em RUN
+
+CREATE TABLE IF NOT EXISTS categories (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  icon text DEFAULT 'fas fa-tag',
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  description text,
+  category text NOT NULL,
+  image_url text,
+  image_path text,
+  is_featured boolean DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Se a tabela products já existir:
+-- ALTER TABLE products ADD COLUMN IF NOT EXISTS is_featured boolean DEFAULT false;
+
+-- Categorias padrão
+INSERT INTO categories (name, slug, icon) VALUES
+  ('Chapéus', 'chapeus', 'fas fa-hat-cowboy'),
+  ('Botas', 'botas', 'fas fa-shoe-prints'),
+  ('Cintos', 'cintos', 'fas fa-gem'),
+  ('Camisas', 'camisas', 'fas fa-tshirt'),
+  ('Camisas Femininas', 'camisas-femininas', 'fas fa-user-tie'),
+  ('Calças', 'calcas', 'fas fa-person'),
+  ('Calças Femininas', 'calcas-femininas', 'fas fa-user'),
+  ('Acessórios', 'acessorios', 'fas fa-ring')
+ON CONFLICT (slug) DO NOTHING;</div>
+          </details>
+        </div>
+
+        <div class="settings-section">
+          <h3>🖼️ Cloudinary (Imagens)</h3>
+          <div class="info-box">
+            <strong>25GB gratuito:</strong> Crie conta em <strong>cloudinary.com</strong>. No Dashboard você encontra o <strong>Cloud Name</strong> e a <strong>API Key</strong>. Crie um <strong>Upload Preset</strong> sem assinatura em Settings → Upload.
+          </div>
+          <div class="two-col">
+            <div class="form-group">
+              <label>Cloud Name</label>
+              <input type="text" id="cfgCloudName" placeholder="meu-cloud" />
+            </div>
+            <div class="form-group">
+              <label>Upload Preset (unsigned)</label>
+              <input type="text" id="cfgCloudPreset" placeholder="ml_default" />
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-gold" onclick="saveSettings()">
+          <i class="fas fa-save"></i> Salvar Configurações
+        </button>
+        <button class="btn btn-outline" style="margin-left:.75rem;" onclick="testConnections()">
+          <i class="fas fa-plug"></i> Testar Conexões
+        </button>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Modal: Produto -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="productModalTitle">NOVO PRODUTO</h3>
+      <button class="modal-close" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="productId" />
+
+      <div class="two-col">
+        <div class="form-group">
+          <label>Nome do Produto *</label>
+          <input type="text" id="productName" placeholder="Ex: Chapéu Texano Premium" />
+        </div>
+        <div class="form-group">
+          <label>Categoria *</label>
+          <select id="productCategory">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Descrição</label>
+        <textarea id="productDesc" placeholder="Descrição breve do produto..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:.75rem;cursor:pointer;user-select:none;">
+          <span style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;">
+            <input type="checkbox" id="productFeatured" style="opacity:0;width:0;height:0;position:absolute;" onchange="
+              var t=document.getElementById('featuredToggleTrack');
+              var th=document.getElementById('featuredToggleThumb');
+              t.style.background=this.checked?'var(--gold)':'var(--bg4)';
+              th.style.left=this.checked?'23px':'3px';
+            ">
+            <span id="featuredToggleTrack" style="position:absolute;inset:0;border-radius:24px;background:var(--bg4);border:1px solid var(--border);transition:.2s;">
+              <span id="featuredToggleThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--text-muted);transition:.2s;"></span>
+            </span>
+          </span>
+          <span>
+            <i class="fas fa-star" style="color:var(--gold);margin-right:.3rem;font-size:.85rem;"></i>
+            Produto em Destaque
+            <span style="font-size:.75rem;color:var(--text-muted);">(aparece no carrossel da home)</span>
+          </span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>Imagem</label>
+        <div class="img-source-tabs">
+          <button class="img-tab active" onclick="switchImgTab('upload',this)">📤 Upload (Cloudinary)</button>
+          <button class="img-tab" onclick="switchImgTab('url',this)">🔗 URL / Caminho Local</button>
+        </div>
+
+        <div id="imgTabUpload">
+          <div class="img-upload-area" id="dropZone">
+            <input type="file" id="imgFileInput" accept="image/*" onchange="handleFileSelect(this)" />
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Arraste uma imagem ou <span class="gold-text">clique para selecionar</span></p>
+            <p class="img-upload-hint">JPG, PNG, WEBP — Máx. 5MB</p>
+          </div>
+          <img id="imgPreview" class="img-preview" />
+          <p id="imgUploadStatus" style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem;"></p>
+        </div>
+
+        <div id="imgTabUrl" style="display:none;">
+          <div class="form-group" style="margin:0;">
+            <input type="text" id="productImageUrl" placeholder="https://... ou uploads/Categoria/foto.jpg" oninput="previewFromUrl(this.value)" />
+          </div>
+          <img id="imgPreviewUrl" class="img-preview" style="display:none;" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('productModal')">Cancelar</button>
+      <button class="btn btn-gold" onclick="saveProduct()">
+        <i class="fas fa-save"></i> Salvar Produto
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Categoria -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3 id="catModalTitle">NOVA CATEGORIA</h3>
+      <button class="modal-close" onclick="closeModal('catModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="catId" />
+      <div class="form-group">
+        <label>Nome da Categoria *</label>
+        <input type="text" id="catName" placeholder="Ex: Coletes" oninput="autoSlug(this.value)" />
+      </div>
+      <div class="form-group">
+        <label>Slug (identificador único) *</label>
+        <input type="text" id="catSlug" placeholder="Ex: coletes" />
+      </div>
+      <div class="form-group">
+        <label>Ícone Font Awesome</label>
+        <input type="text" id="catIcon" placeholder="fas fa-tag" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('catModal')">Cancelar</button>
+      <button class="btn btn-gold" onclick="saveCat()"><i class="fas fa-save"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p id="loadingText">Carregando...</p>
+</div>
+<script src="admin.js"></script>
+</body>
+</html>
